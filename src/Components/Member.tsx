@@ -1,20 +1,24 @@
 import {
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
   Button,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 import { Field, FormikProvider, useFormik } from "formik";
-import React, { useEffect, useState } from "react";
 import * as Yup from "yup";
-import { getLocalStorage, LocalStorageKey } from "../common/utilities/localStorage";
+import { APIErrorResponse } from "../common/types/APIErrorResponse.type";
+import {
+  LocalStorageKey,
+  getLocalStorage,
+} from "../common/utilities/localStorage";
+import { useEffect, useState } from "react";
 
-export interface Member {
+export interface MemberProps {
   firstName: string;
   lastName: string;
   mobile: string;
@@ -55,7 +59,7 @@ interface IFieldProps {
 }
 
 const Member = () => {
-  const [memberDetails, setMemberDetails] = useState([]);
+    const [memberDetails,setMemberDetails]=useState([])
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -118,14 +122,23 @@ const Member = () => {
     onSubmit: async () => {
       console.log(formik.values);
       const token = getLocalStorage(LocalStorageKey.AccessToken);
-      await axios.post(
-        "http://localhost:7575/api/v1/gyms/61d6c0a4-55ac-436b-813b-68c48cd9158e/members",
-        formik.values,{
+      try {
+        await axios.post(
+          "http://localhost:7575/api/v1/gyms/d0c658de-7637-4431-84f4-c781ca804afc/members",
+          formik.values,
+          {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
-      );
+          );
+          loadMemberData()
+      } catch (error: unknown) {
+        if (error instanceof APIErrorResponse) {
+          console.error(error.message);
+        }
+        return [];
+      }
     },
   });
 
@@ -133,27 +146,32 @@ const Member = () => {
     try {
       const token = getLocalStorage(LocalStorageKey.AccessToken);
       const response = await axios.get(
-        "http://localhost:7575/api/v1/gyms/61d6c0a4-55ac-436b-813b-68c48cd9158e/members",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        "http://localhost:7575/api/v1/gyms/d0c658de-7637-4431-84f4-c781ca804afc/members",{
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
       );
+
       return response.data;
-    } catch (error) {
-      console.error(error.message);
-      return [];
-    }
+    } catch (error: unknown) {
+        if (error instanceof APIErrorResponse) {
+          console.error(error.message);
+        }
+        return [];
+      }
   };
 
-  const loadMemberData = async () => {
-    const loadData = await getMemberData();
-    setMemberDetails(loadData);
-  };
-  useEffect(() => {
-    loadMemberData();
-  }, []);
+  const loadMemberData=async()=>{
+    const loadData=await getMemberData();
+    setMemberDetails(loadData)
+  }
+
+  useEffect(()=>{
+    loadMemberData()
+  },[])
+
+
   return (
     <FormikProvider value={formik}>
       <Paper elevation={3} sx={{ maxWidth: "50%", ml: 50 }}>
@@ -288,7 +306,12 @@ const Member = () => {
                 id="demo-simple-select"
                 label="Plan Id"
               >
-                <MenuItem value={"morning"}>Morning</MenuItem>
+                <MenuItem value={"61d6c0a4-55ac-436b-813b-68c48cd91345"}>
+                  Morning
+                </MenuItem>
+                <MenuItem value={"61d6c0a4-55ac-436b-813b-68c48cd91356"}>
+                  Evening
+                </MenuItem>
               </Select>
               {meta.touched && meta.error ? (
                 <FormHelperText>{meta.error}</FormHelperText>
@@ -308,7 +331,12 @@ const Member = () => {
                 id="demo-simple-select"
                 label="Batch Id"
               >
-                <MenuItem value={"morning"}>Morning</MenuItem>
+                <MenuItem value={"61d6c0a4-55ac-436b-813b-68c48cd91245"}>
+                  Morning
+                </MenuItem>
+                <MenuItem value={"61d6c0a4-55ac-436b-813b-68c48cd91256"}>
+                  Evening
+                </MenuItem>
               </Select>
               {meta.touched && meta.error ? (
                 <FormHelperText>{meta.error}</FormHelperText>
